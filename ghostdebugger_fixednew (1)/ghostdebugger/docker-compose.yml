@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  ghostdebugger:
+    build: .
+    image: ghostdebugger:latest
+    container_name: ghostdebugger
+    ports:
+      - "8000:8000"   # FastAPI
+      - "8501:8501"   # Streamlit
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app
+      - API_URL=http://localhost:8000
+    restart: unless-stopped
+    # Caps the whole container (API + Streamlit + sandboxed subprocess).
+    # Tune to your hardware — this is a safety net, not a substitute for
+    # the sandbox's own per-execution limits (SANDBOX_MEMORY_MB).
+    mem_limit: 2g
+    cpus: "2.0"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
